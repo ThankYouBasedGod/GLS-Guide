@@ -35,12 +35,17 @@ const ThirdBossActions = {
 	147: {msg: '→→→ 右后'},
 	148: {msg: '→→→ 右后 (扩散)', sign_degrees: 30, sign_distance: 320},
 	155: {msg: '→→→ 右后 (扩散)', sign_degrees: 30, sign_distance: 320},
+
 	139: {msg: '顺时针 (摆头) 王打右边', sign_degrees: 270, sign_distance: 200}, //151
 	150: {msg: '顺时针 (落地) 王打右边', sign_degrees: 270, sign_distance: 200}, //151
 	141: {msg: '逆时针 (摆头) 王打左边', sign_degrees: 90, sign_distance: 200}, //153
 	152: {msg: '逆时针 (落地) 王打左边', sign_degrees: 90, sign_distance: 200}, //153
+
 	161: {msg: '(后砸) (前砸)'},
 	162: {msg: '(后砸) (前砸)'},
+	213: {msg: '213 尾巴!!'},
+	215: {msg: '215 尾巴!!'},
+
 	300: {msg: '闪避!!'},
 	360: {msg: '爆炸!!爆炸!!'}
 };
@@ -133,6 +138,11 @@ module.exports = function ccGuide(d) {
 				if (event.curHp == event.maxHp) {
 					notice = true,
 					power = false,
+					Level = 0,
+					powerMsg = '';
+				}
+				
+				if (bosshp == 0.3) {	// 二次觉醒 重置充能计数
 					Level = 0,
 					powerMsg = '';
 				}
@@ -245,12 +255,12 @@ module.exports = function ccGuide(d) {
 					}
 					// 蓄电层数计数
 					if (whichmode==2) {
-						if (skillid===360) power = true, Level = 0, powerMsg = ''; // 放电 重新充能
-						if (skillid===300) power = true, Level = 0, powerMsg = ''; // 觉醒 开始充能
+						if (skillid===360) Level = 0, powerMsg = '';				// 放电爆炸 重置充能计数
+						if (skillid===300) power = true, Level = 0, powerMsg = '';	// 一次觉醒 开始充能计数
 					}
 					if (power && (
 						skillid===118||
-						skillid===215||
+						skillid===213||
 
 						skillid===143||
 						skillid===145||

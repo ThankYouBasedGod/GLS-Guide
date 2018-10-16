@@ -141,10 +141,9 @@ module.exports = function ccGuide(d) {
 					Level = 0,
 					powerMsg = '';
 				}
-				
-				if (bosshp == 0.3) {	// 二次觉醒 重置充能计数
-					Level = 0,
-					powerMsg = '';
+				// 二次觉醒 重置充能计数
+				if (bosshp == 0.3) {
+					Level = 0;
 				}
 
 				if (event.huntingZoneId == HuntingZn[0]) {
@@ -255,8 +254,10 @@ module.exports = function ccGuide(d) {
 					}
 					// 蓄电层数计数
 					if (whichmode==2) {
-						if (skillid===360) Level = 0, powerMsg = '';				// 放电爆炸 重置充能计数
-						if (skillid===300) power = true, Level = 0, powerMsg = '';	// 一次觉醒 开始充能计数
+						// 一次觉醒 开始充能计数
+						if (skillid===300) power = true, Level = 0, powerMsg = '';
+						// 放电爆炸 重置充能计数
+						if (skillid===360) Level = 0;
 					}
 					if (power && (
 						skillid===118||

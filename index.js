@@ -261,7 +261,9 @@ module.exports = function ccGuide(d) {
 					}
 					if (power && (
 						skillid===118||
+
 						skillid===213||
+						skillid===215||
 
 						skillid===143||
 						skillid===145||

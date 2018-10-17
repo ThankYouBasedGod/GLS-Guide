@@ -50,7 +50,7 @@ const ThirdBossActions = {
 	360: {msg: '爆炸!!爆炸!!'}
 };
 
-module.exports = function ccGuide(d) {
+module.exports = function DDGuide(d) {
 	let	enabled = config.enabled,
 		sendToParty = config.sendToParty,
 		streamenabled = config.streamenabled,

@@ -46,8 +46,9 @@ const ThirdBossActions = {
 	213: {msg: '213 尾巴!!'},
 	215: {msg: '215 尾巴!!'},
 
-	300: {msg: '闪避!!'},
-	360: {msg: '爆炸!!爆炸!!'}
+	300: {msg: '一次觉醒!!'},
+	360: {msg: '爆炸!!爆炸!!'},
+	399: {msg: '二次觉醒!!'}
 };
 
 module.exports = function DDGuide(d) {
@@ -140,10 +141,6 @@ module.exports = function DDGuide(d) {
 					power = false,
 					Level = 0,
 					powerMsg = '';
-				}
-				// 二次觉醒 重置充能计数
-				if (bosshp == 0.3) {
-					Level = 0;
 				}
 
 				if (event.huntingZoneId == HuntingZn[0]) {
@@ -258,6 +255,8 @@ module.exports = function DDGuide(d) {
 						if (skillid===300) power = true, Level = 0, powerMsg = '';
 						// 放电爆炸 重置充能计数
 						if (skillid===360) Level = 0;
+						// 二次觉醒 开始充能计数
+						if (skillid===399) Level = 0;
 					}
 					if (power && (
 						skillid===118||

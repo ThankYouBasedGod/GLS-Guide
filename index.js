@@ -9,9 +9,11 @@ const config = require('./config.json');
 const FirstBossActions = {
 	106: {msg: '重击'},
 	107: {msg: '后喷(击退)'},
+	108: {msg: '点名(击飞)'},
 	109: {msg: '滚石'},
 	110: {msg: '滚石'},
 	301: {msg: '食人花(眩晕)'},
+	307: {msg: '笼子(禁锢)'},
 	309: {msg: '1朵花-鉴定!!'},
 	310: {msg: '2朵花-鉴定!!'},
 	116: {msg: '全屏攻击!!'},
@@ -35,51 +37,40 @@ const ThirdBossActions = {
 	147: {msg: '→→→ 右后'},
 	148: {msg: '→→→ 右后 (扩散)', sign_degrees: 30, sign_distance: 320},
 	155: {msg: '→→→ 右后 (扩散)', sign_degrees: 30, sign_distance: 320},
+	161: {msg: '(后砸) (前砸)'},
+	162: {msg: '(后砸) (前砸)'},
+	213: {msg: '尾巴'},
+	215: {msg: '尾巴'},
 
 	139: {msg: '顺时针 (摆头) 王打右边', sign_degrees: 270, sign_distance: 200}, //151
 	150: {msg: '顺时针 (落地) 王打右边', sign_degrees: 270, sign_distance: 200}, //151
 	141: {msg: '逆时针 (摆头) 王打左边', sign_degrees: 90, sign_distance: 200}, //153
 	152: {msg: '逆时针 (落地) 王打左边', sign_degrees: 90, sign_distance: 200}, //153
 
-	161: {msg: '(后砸) (前砸)'},
-	162: {msg: '(后砸) (前砸)'},
-	213: {msg: '213 尾巴!!'},
-	215: {msg: '215 尾巴!!'},
-
-	300: {msg: '一次觉醒!!'},
+	300: {msg: '一次觉醒 (推人)'},
 	360: {msg: '爆炸!!爆炸!!'},
-	399: {msg: '二次觉醒!!'}
+	399: {msg: '二次觉醒 (推人)'}
 };
 
-module.exports = function DDGuide(d) {
+module.exports = function GrottoOfLostSoulsGuide(d) {
 	let	enabled = config.enabled,
 		sendToParty = config.sendToParty,
 		streamenabled = config.streamenabled,
-		msgcolour = config.msgcolour,
 
 		isTank = false,
 		insidemap = false,
 		insidezone = false,
 		whichmode = 0,
 		whichboss = 0,
-		hooks = [], bossCurLocation, bossCurAngle, uid0 = 999999999, uid1 = 899999999, uid2 = 799999999, notice = true, power = false, Level = 0, powerMsg = '';
+		hooks = [], bossCurLocation, bossCurAngle, uid0 = 999999999, uid1 = 899999999, uid2 = 799999999, power = false, Level = 0, powerMsg = '';
 
-	d.command.add('ddinfo', (arg) => {
-		d.command.message('模块开关: ' + `${enabled}`.clr('00FFFF'));
-		d.command.message('副本地图: ' + insidemap);
-		d.command.message('区域位置: ' + insidezone);
-		d.command.message('副本难度: ' + whichmode);
-		d.command.message('副本首领: ' + whichboss);
-		d.command.message('发送通知 ' + (sendToParty ? '真实组队'.clr('56B4E9') : '仅自己见'.clr('E69F00')));
-		d.command.message('职业分类 ' + (isTank ? '坦克'.clr('00FFFF') : '打手'.clr('FF0000')));
-		sendMessage('test');
-	})
-	d.command.add('ddg', (arg) => {
+	d.command.add('gguide', (arg) => {
 		if (!arg) {
 			enabled = !enabled;
 			d.command.message('辅助提示 ' + (enabled ? '启用'.clr('56B4E9') : '禁用'.clr('E69F00')));
 		} else {
 			switch (arg) {
+				case "p":
 				case "party":
 					sendToParty = !sendToParty;
 					d.command.message('发送通知 ' + (sendToParty ? '组队'.clr('56B4E9') : '自己'.clr('E69F00')));
@@ -87,6 +78,16 @@ module.exports = function DDGuide(d) {
 				case "proxy":
 					streamenabled = !streamenabled;
 					d.command.message('代理频道 ' + (streamenabled ? '启用'.clr('56B4E9') : '禁用'.clr('E69F00')));
+					break;
+				case "debug":
+					d.command.message('模块开关: ' + `${enabled}`.clr('00FFFF'));
+					d.command.message('副本地图: ' + insidemap);
+					d.command.message('区域位置: ' + insidezone);
+					d.command.message('副本难度: ' + whichmode);
+					d.command.message('副本首领: ' + whichboss);
+					d.command.message('发送通知 ' + (sendToParty ? '真实组队'.clr('56B4E9') : '仅自己见'.clr('E69F00')));
+					d.command.message('职业分类 ' + (isTank ? '坦克'.clr('00FFFF') : '打手'.clr('FF0000')));
+					sendMessage('test');
 					break;
 				default :
 					d.command.message('无效的参数!'.clr('FF0000'));
@@ -125,7 +126,6 @@ module.exports = function DDGuide(d) {
 		if (!hooks.length) {
 			hook('S_BOSS_GAGE_INFO', 3, sBossGageInfo);
 			hook('S_ACTION_STAGE', 8, sActionStage);
-			hook('S_DUNGEON_EVENT_MESSAGE', 2,sDungeonEventMessage);
 
 			function sBossGageInfo(event) {
 				if (!insidemap) return;
@@ -137,7 +137,6 @@ module.exports = function DDGuide(d) {
 				}
 
 				if (event.curHp == event.maxHp) {
-					notice = true,
 					power = false,
 					Level = 0,
 					powerMsg = '';
@@ -169,12 +168,11 @@ module.exports = function DDGuide(d) {
 
 				if (whichboss==1 && FirstBossActions[skillid]) {
 					if (!isTank && skillid === 106) return;
-					if ( isTank && skillid === 107) return;
+					if ( isTank && (skillid === 107 || skillid === 108 || skillid === 307)) return;
 					sendMessage(FirstBossActions[skillid].msg);
 				}
 
 				if (whichboss==2 && SecondBossActions[skillid]) {
-					sendMessage(SecondBossActions[skillid].msg);
 					// 2王 内外圈
 					if (skillid === 114 || skillid === 301 || skillid === 302) {
 						Spawnitem(603, 20, 260);
@@ -240,47 +238,53 @@ module.exports = function DDGuide(d) {
 						Spawnitem(603, 270, 475);
 						Spawnitem(603, 270, 500);
 					}
+					sendMessage(SecondBossActions[skillid].msg);
 				}
 
 				if (whichboss==3 && ThirdBossActions[skillid]) {
-					// 屏蔽重复通知的技能
-					if (!notice) return;
-					if (notice && (skillid===118||skillid===139||skillid===150||skillid===141||skillid===152)) {
-						notice = false;
-						setTimeout(function() { notice = true }, 4000);
-					}
 					// 蓄电层数计数
 					if (whichmode==2) {
 						// 一次觉醒 开始充能计数
 						if (skillid===300) power = true, Level = 0, powerMsg = '';
 						// 放电爆炸 重置充能计数
 						if (skillid===360) Level = 0;
-						// 二次觉醒 开始充能计数
+						// 二次觉醒 重置充能计数
 						if (skillid===399) Level = 0;
-					}
-					if (power && (
-						skillid===118||
+						// 充能开关打开 并且 施放以下技能 则增加一层
+						if (power) {
+							switch (skillid) {
+								case 118:	// 三连击
 
-						skillid===213||
-						skillid===215||
+								case 143:	// 左后
+								case 145:	// 左后
 
-						skillid===143||
-						skillid===145||
+								case 146:	// 左后 (扩散)
+								case 154:	// 左后 (扩散)
 
-						skillid===146||
-						skillid===154||
+								case 144:	// 右后
+								case 147:	// 右后
 
-						skillid===144||
-						skillid===147||
+								case 148:	// 右后 (扩散)
+								case 155:	// 右后 (扩散)
 
-						skillid===148||
-						skillid===155||
+								case 161:	// (后砸) (前砸)
+								case 162:	// (后砸) (前砸)
 
-						skillid===161||
-						skillid===162)
-					) {
-						Level++;
-						powerMsg = '<font color="#FF0000">(' + Level + '层)</font> ';
+								case 213:	// 尾巴
+								case 215:	// 尾巴
+									Level++;
+									powerMsg = '<font color="#FF0000">' + Level + '</font>层 ';
+									break;
+								default :
+									powerMsg = '';
+									break;
+							}
+						}
+						// 屏蔽[三连击]技能连续触发充能
+						if (power && (skillid===118)) {
+							power = false;
+							setTimeout(function() { power = true }, 4000);
+						}
 					}
 
 					// 3王 左右扩散初始位置标记
@@ -300,17 +304,7 @@ module.exports = function DDGuide(d) {
 						Spawnitem(603, 0, 175);
 						Spawnitem(603, 0, 200);
 						Spawnitem(603, 0, 225);
-						Spawnitem(603, 0, 250);
-						Spawnitem(603, 0, 275);
-						Spawnitem(603, 0, 300);
-						Spawnitem(603, 0, 325);
-						Spawnitem(603, 0, 350);
-						Spawnitem(603, 0, 375);
-						Spawnitem(603, 0, 400);
-						Spawnitem(603, 0, 425);
-						Spawnitem(603, 0, 450);
-						Spawnitem(603, 0, 475);
-						Spawnitem(603, 0, 500);
+						Spawnitem(556, 0, 250);
 
 						Spawnitem(603, 180, 25);
 						Spawnitem(603, 180, 50);
@@ -340,15 +334,6 @@ module.exports = function DDGuide(d) {
 				}
 			}
 
-			function sDungeonEventMessage(event) {
-				if (!enabled || !insidezone || whichboss==0) return;
-				let sDungeonEventMessage = parseInt(event.message.replace('@dungeon:', ''));
-				if (whichboss==3) {
-					if (sDungeonEventMessage === 0000000) {
-						sendMessage('!!');
-					}
-				}
-			}
 		}
 	}
 
@@ -370,17 +355,12 @@ module.exports = function DDGuide(d) {
 		insidezone = false,
 		whichmode = 0,
 		whichboss = 0,
-		notice = true,
 		power = false,
 		Level = 0,
 		powerMsg = '';
 	}
 
 	function sendMessage(msg) {
-		if (msgcolour) {
-			msg = `${msg}`.clr(msgcolour);
-		}
-
 		if (sendToParty) {
 			d.toServer('C_CHAT', 1, {
 				channel: 21, //21 = p-notice, 1 = party, 2 = guild
@@ -428,34 +408,37 @@ module.exports = function DDGuide(d) {
 	}
 	// 地面提示(光柱+告示牌)
 	function SpawnThing(degrees, radius, times) { //偏移角度 半径距离 持续时间
-		let r = null, rads = null, finalrad = null, pos = null;
+		let r = null, rads = null, finalrad = null, spawnx = null, spawny = null, pos = null;
 
 		r = bossCurAngle - Math.PI;
 		rads = (degrees * Math.PI/180);
 		finalrad = r - rads;
-		bossCurLocation.x = bossCurLocation.x + radius * Math.cos(finalrad);
-		bossCurLocation.y = bossCurLocation.y + radius * Math.sin(finalrad);
+		spawnx = bossCurLocation.x + radius * Math.cos(finalrad);
+		spawny = bossCurLocation.y + radius * Math.sin(finalrad);
+		pos = {x:spawnx, y:spawny};
 		// 告示牌
 		d.toClient('S_SPAWN_BUILD_OBJECT', 2, {
 			gameId : uid1,
 			itemId : 1,
-			loc : bossCurLocation,
+			loc : new Vec3(pos.x, pos.y, bossCurLocation.z),
 			w : r,
 			unk : 0,
 			ownerName : '提示',
 			message : '提示区'
 		});
 
-		bossCurLocation.z = bossCurLocation.z - 100;
 		// 龙头光柱
+		bossCurLocation.z = bossCurLocation.z - 100;
 		d.toClient('S_SPAWN_DROPITEM', 6, {
 			gameId: uid2,
-			loc: bossCurLocation,
+			loc: new Vec3(pos.x, pos.y, bossCurLocation.z),
 			item: 98260,
 			amount: 1,
 			expiry: 6000,
 			owners: [{playerId: uid2}]
 		});
+		bossCurLocation.z = bossCurLocation.z + 100;
+
 		// 延迟消除
 		setTimeout(DespawnThing, times, uid1, uid2);
 		uid1--;

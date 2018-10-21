@@ -64,7 +64,7 @@ module.exports = function GrottoOfLostSoulsGuide(d) {
 		whichboss = 0,
 		hooks = [], bossCurLocation, bossCurAngle, uid0 = 999999999, uid1 = 899999999, uid2 = 799999999, power = false, Level = 0, powerMsg = '';
 
-	d.command.add('gguide', (arg) => {
+	d.command.add('gls', (arg) => {
 		if (!arg) {
 			enabled = !enabled;
 			d.command.message('辅助提示 ' + (enabled ? '启用'.clr('56B4E9') : '禁用'.clr('E69F00')));
@@ -136,7 +136,7 @@ module.exports = function GrottoOfLostSoulsGuide(d) {
 					whichboss = 0;
 				}
 
-				if (event.curHp == event.maxHp) {
+				if (bosshp === 1) {
 					power = false,
 					Level = 0,
 					powerMsg = '';
@@ -273,7 +273,7 @@ module.exports = function GrottoOfLostSoulsGuide(d) {
 								case 213:	// 尾巴
 								case 215:	// 尾巴
 									Level++;
-									powerMsg = '<font color="#FF0000">' + Level + '</font>层 ';
+									powerMsg = '<font color="#FF0000">' + Level + '层</font> ';
 									break;
 								default :
 									powerMsg = '';
